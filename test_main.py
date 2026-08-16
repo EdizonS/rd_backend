@@ -66,3 +66,7 @@ def test_rechaza_cuota_inicial_mayor_al_valor_vehiculo():
 def test_rechaza_plazo_cero():
     with pytest.raises(ValidationError):
         SimulacionInput(tipo_vehiculo="moto", valor_vehiculo=1000000, cuota_inicial=0, plazo_meses=0)
+
+def test_rechaza_cuota_inicial_igual_al_valor_vehiculo():
+    with pytest.raises(ValidationError):
+        SimulacionInput(tipo_vehiculo="moto", valor_vehiculo=1000000, cuota_inicial=1000000, plazo_meses=12)

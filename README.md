@@ -148,7 +148,7 @@ Tabla `solicitud_credito`:
 |---|---|---|
 | id | Integer (PK) | Identificador autogenerado |
 | nombre, apellido, correo, telefono, ciudad | String | Datos del solicitante |
-| tipo_vehiculo | String | "bicicleta electrica" o "moto electrica" |
+| tipo_vehiculo | String | "bicicleta" o "moto" |
 | valor_vehiculo, cuota_inicial | Float | Datos ingresados por el usuario |
 | plazo_meses | Integer | Plazo del crédito en meses |
 | valor_financiado, cuota_mensual, total_intereses, total_a_pagar | Float | Calculados por el backend |
@@ -184,7 +184,7 @@ Para la tabla de amortización, mes a mes se calcula el interés sobre saldo, el
 
 ## 12. Pruebas automatizadas
 
-El proyecto incluye 18 pruebas unitarias sobre la lógica de cálculo (`calcular_credito`, `generar_amortizacion`) y las validaciones de Pydantic, cubriendo casos normales y casos límite (plazo de 1 mes, financiamiento del 100%, cuota inicial igual al valor del vehículo, rechazo de datos inválidos).
+El proyecto incluye 19 pruebas unitarias sobre la lógica de cálculo (`calcular_credito`, `generar_amortizacion`) y las validaciones de Pydantic, cubriendo casos normales y casos límite (plazo de 1 mes, financiamiento del 100%, cuota inicial igual al valor del vehículo, rechazo de datos inválidos).
 
 Para ejecutarlas:
 
@@ -197,7 +197,7 @@ pytest -v
 - **Tasa de interés fija (25% EA):** el enunciado no especifica una tasa, así que se definió como constante de negocio en el backend, documentada y justificada contra la tasa de usura vigente.
 - **La tabla de amortización no se persiste en base de datos:** se recalcula a partir de los datos ya guardados de la solicitud (valor financiado, cuota, plazo) cada vez que se consulta. Esto evita una tabla adicional y un JOIN innecesario para el alcance de esta prueba.
 - **No se gestiona el ciclo de vida de pagos** (marcar cuotas como pagadas, mora, etc.) porque no está contemplado en las historias de usuario del enunciado — solo se pide simular y registrar, no administrar pagos reales.
-- **CORS habilitado únicamente para `http://localhost:5173`** (el origen del frontend en desarrollo local).
+- **CORS habilitado para `http://localhost:5173` (desarrollo local) y `https://rd-frontend.vercel.app` (frontend en producción).**
 - **`POST /amortizacion` como endpoint separado de `/simular`:** en una primera versión, la tabla de amortización solo se podía consultar tras registrar una solicitud (`GET /solicitudes/{id}/amortizacion`), lo cual obligaba al usuario a entregar sus datos personales antes de ver el detalle completo del crédito — contradiciendo la HU-01, que pide conocer cuotas y resumen *antes de tomar una decisión*. Se separó el cálculo de la tabla de la persistencia, permitiendo verla directamente desde los datos de la simulación.
 - **`correo` sin restricción de unicidad:** inicialmente se marcó como único en el modelo, pero eso impedía que una misma persona registrara más de una solicitud (por ejemplo, para comparar planes con distinto plazo o vehículo). Se corrigió para permitir múltiples solicitudes por correo.
 
@@ -206,3 +206,11 @@ pytest -v
 - No se testean los endpoints HTTP de forma automatizada (solo la lógica de cálculo pura); un test de integración con `TestClient` de FastAPI y una base de datos de prueba sería la mejora natural siguiente.
 - No hay autenticación ni autorización — no fue definido en el alcance de la prueba.
 - El frontend valida en tiempo real como apoyo de UX, pero la validación real e inquebrantable ocurre siempre en el backend.
+
+## 15. Despliegue
+
+- Backend en producción: https://roda-backend-jr4j.onrender.com
+- Documentación Swagger: https://roda-backend-jr4j.onrender.com/docs
+
+> Nota: al estar en el plan gratuito de Render, el servicio puede "dormir" tras un periodo de inactividad — la primera petición después de eso puede tardar 30-60 segundos en responder.
+> Nota: la base de datos gratuita de Render expira el 14 de septiembre de 2026.
